@@ -65,9 +65,18 @@ curl -X POST http://localhost:8082/v3/clusters/<CLUSTER_ID>/topics \
 
 ### Produce Messages
 ```sh
-curl -X POST http://localhost:8082/v3/clusters/<CLUSTER_ID>/topics/test-topic/records \
-  -H "Content-Type: application/json" \
-  -d '{"key": "key1", "value": "Hello Kafka!"}'
+curl --location 'http://localhost:8082/v3/clusters/<CLUSTER_ID>/topics/test-topic/records' \
+--header 'Content-Type: application/json' \
+--data '{
+    "key": {
+        "type": "STRING",
+        "data": "key1"
+    },
+    "value": {
+        "type": "STRING",
+        "data": "Hello Kafka!"
+    }
+}'
 ```
 
 ### Consume Messages
