@@ -1,11 +1,15 @@
-# Kafka KRaft & REST Proxy Docker Setup
+Sure! Here's your **updated Kafka KRaft & REST Proxy Docker Setup README**, now enhanced with a **complete and working Produce + Consume flow** using both **v3 REST Proxy for producing** and **v2 REST Proxy for consuming** (as v3 does not support direct consuming).
 
-## Create Docker Network
+---
+
+# ✅ Kafka KRaft & REST Proxy Docker Setup
+
+## 🔌 Create Docker Network
 ```sh
 docker network create kafka-network
 ```
 
-## Start Kafka KRaft Mode
+## 🚀 Start Kafka in KRaft Mode
 ```sh
 docker run -d --name kafka-kraft --network kafka-network -h kafka-kraft \
   -p 9101:9101 -p 9092:9092 -p 29092:29092 \
@@ -25,12 +29,12 @@ docker run -d --name kafka-kraft --network kafka-network -h kafka-kraft \
   confluentinc/cp-kafka:7.9.0
 ```
 
-### Generate a Cluster ID (If not available)
+### 🆔 Generate Cluster ID (If not already available)
 ```sh
 docker run --rm confluentinc/cp-kafka:7.9.0 kafka-storage random-uuid
 ```
 
-## Start Kafka REST Proxy
+## 🌐 Start Kafka REST Proxy
 ```sh
 docker run -d --name kafka-rest --network kafka-network -h kafka-rest \
   -p 8082:8082 \
@@ -40,19 +44,21 @@ docker run -d --name kafka-rest --network kafka-network -h kafka-rest \
   confluentinc/cp-kafka-rest:7.9.0
 ```
 
-## Kafka REST API Commands
+---
 
-### List Clusters
+## 📡 Kafka REST API Commands
+
+### 🔍 List Clusters
 ```sh
 curl -X GET http://localhost:8082/v3/clusters
 ```
 
-### List Topics
+### 📋 List Topics
 ```sh
 curl -X GET http://localhost:8082/v3/clusters/<CLUSTER_ID>/topics
 ```
 
-### Create a Topic
+### ➕ Create a Topic
 ```sh
 curl -X POST http://localhost:8082/v3/clusters/<CLUSTER_ID>/topics \
   -H "Content-Type: application/json" \
@@ -63,26 +69,60 @@ curl -X POST http://localhost:8082/v3/clusters/<CLUSTER_ID>/topics \
       }'
 ```
 
-### Produce Messages
+---
+
+## 🔁 Produce & Consume Messages (END-TO-END Flow)
+
+### 📤 Produce Message (v3 API)
 ```sh
-curl --location 'http://localhost:8082/v3/clusters/<CLUSTER_ID>/topics/test-topic/records' \
---header 'Content-Type: application/json' \
---data '{
+curl -X POST http://<PUBLIC_IP>:8082/v3/clusters/<CLUSTER_ID>/topics/test-topic/records \
+  -H "Content-Type: application/json" \
+  -d '{
     "key": {
-        "type": "STRING",
-        "data": "key1"
+      "type": "STRING",
+      "data": "key1"
     },
     "value": {
-        "type": "STRING",
-        "data": "Hello Kafka!"
+      "type": "STRING",
+      "data": "Hello Kafka!"
     }
 }'
 ```
 
-### Consume Messages
+---
+
+### 🧑‍💻 Create Consumer (v2 API)
 ```sh
-curl -X GET http://localhost:8082/v3/clusters/<CLUSTER_ID>/topics/test-topic/records
+curl -X POST http://<PUBLIC_IP>:8082/consumers/my-group \
+  -H "Content-Type: application/vnd.kafka.v2+json" \
+  -d '{
+    "name": "my-consumer",
+    "format": "binary",
+    "auto.offset.reset": "earliest"
+}'
 ```
 
-Replace `<CLUSTER_ID>` with the generated Cluster ID and `<PUBLIC_IP>` with your server's public IP address.
+### 📥 Subscribe to Topic
+```sh
+curl -X POST http://<PUBLIC_IP>:8082/consumers/my-group/instances/my-consumer/subscription \
+  -H "Content-Type: application/vnd.kafka.v2+json" \
+  -d '{ "topics": ["test-topic"] }'
+```
 
+### 📬 Consume Messages
+```sh
+curl -X GET http://<PUBLIC_IP>:8082/consumers/my-group/instances/my-consumer/records \
+  -H "Accept: application/vnd.kafka.v2+json"
+```
+
+### 🔡 Decode Base64 Message (Optional - for clean output)
+```sh
+curl -s -X GET http://<PUBLIC_IP>:8082/consumers/my-group/instances/my-consumer/records \
+  -H "Accept: application/vnd.kafka.v2+json" | jq -r '.[].key,.[].value' | while read line; do echo "$line" | base64 -d; echo; done
+```
+
+---
+
+> ℹ️ **Replace `<PUBLIC_IP>` with your actual server IP address and `<CLUSTER_ID>` with the value from `/v3/clusters` API output.**
+
+Would you like me to generate this as a `README.md` file for your project folder?
