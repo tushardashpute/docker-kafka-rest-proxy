@@ -1,4 +1,4 @@
-Sure! Here's your **updated Kafka KRaft & REST Proxy Docker Setup README**, now enhanced with a **complete and working Produce + Consume flow** using both **v3 REST Proxy for producing** and **v2 REST Proxy for consuming** (as v3 does not support direct consuming).
+**Kafka KRaft & REST Proxy Docker Setup README**, now enhanced with a **complete and working Produce + Consume flow** using both **v3 REST Proxy for producing** and **v2 REST Proxy for consuming** (as v3 does not support direct consuming).
 
 ---
 
